@@ -20,6 +20,9 @@ import { SyntaxHighlightedCodeEditor } from '../common/SyntaxHighlightedCodeEdit
 import { HistoryDrawer } from './HistoryDrawer'
 import { AnnouncementModal } from './AnnouncementModal'
 import { QuickGuideModal } from './QuickGuideModal'
+import { PeriodicGuideToast } from './PeriodicGuideToast'
+import { FocusGamificationHUD } from '../gamification/FocusGamificationHUD'
+import { playHapticSound } from '../../core/gamification/studyGamification'
 import { hasUnreadAnnouncement } from '../../core/curriculum/updateAnnouncements'
 import confetti from 'canvas-confetti'
 import { 
@@ -688,6 +691,7 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
 
     const allPassed = results.every(r => r.passed)
     if (allPassed && results.length > 0) {
+      playHapticSound('pass')
       confetti({
         particleCount: 80,
         spread: 60,
@@ -781,6 +785,11 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
               <CheckCircle2 className="w-3 h-3" /> Đạt
             </span>
           )}
+        </div>
+
+        {/* Center: In-App Focus Timer & Gamification HUD */}
+        <div className="flex items-center">
+          <FocusGamificationHUD completedLabIds={completedLabIds} />
         </div>
 
         {/* Right: History, Add Exercise, Vim Mode, Run, Submit */}
@@ -1391,6 +1400,9 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
         isOpen={isQuickGuideOpen}
         onClose={() => setIsQuickGuideOpen(false)}
       />
+
+      {/* 6. 3-Hour Rate-Limited Periodic Guide Toast (non-intrusive) */}
+      <PeriodicGuideToast />
     </div>
   )
 }
