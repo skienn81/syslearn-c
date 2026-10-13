@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+
+  /* Font gia đình thống nhất: Inter cho giao diện, JetBrains Mono cho code/số */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Màu nhấn DUY NHẤT cho toàn bộ app: Sky Cyan thanh lịch */
+  --primary: #38bdf8;
+  --primary-hover: #0ea5e9;
+  --primary-foreground: #020617;
+  --primary-light: rgba(56, 189, 248, 0.1);
+
+  /* Bảng màu Dark Mode êm mắt, không chói lóa */
+  --background: #080c14;
+  --surface: #0e1422;
+  --surface-hover: #141c2e;
+  --surface-overlay: #182238;
+  --foreground: #f1f5f9;
+  --muted: #94a3b8;
+  --muted-dark: #64748b;
+
+  /* Đường tóc 1px viền card và vạch ngăn cách */
+  --border: #1e293b;
+  --border-strong: #334155;
+
+  /* Trạng thái ngữ nghĩa (chỉ dùng khi báo lỗi/cảnh báo/thành công) */
+  --success: #34d399;
+  --success-bg: rgba(52, 211, 153, 0.1);
+  --warning: #fbbf24;
+  --warning-bg: rgba(251, 191, 36, 0.1);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.1);
+
+  --radius: 0.75rem; /* 12px chuẩn rounded-xl */
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Thanh cuộn tinh tế 4px tự ẩn theo luật I18 của skill ui-ux */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+.font-mono-code {
+  font-family: var(--font-mono);
+}
