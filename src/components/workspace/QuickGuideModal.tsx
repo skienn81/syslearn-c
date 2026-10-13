@@ -127,6 +127,14 @@ export const QuickGuideModal: React.FC<QuickGuideModalProps> = ({ isOpen, onClos
                 <span className="text-cyan-400 font-bold block">/tu_khoa</span>
                 <span className="text-slate-400 text-[10px]">Tìm kiếm từ khóa</span>
               </div>
+              <div className="p-2 rounded bg-slate-950 border border-slate-800/80">
+                <span className="text-emerald-400 font-bold block">F5</span>
+                <span className="text-slate-400 text-[10px]">Chạy thử GCC</span>
+              </div>
+              <div className="p-2 rounded bg-slate-950 border border-slate-800/80">
+                <span className="text-sky-400 font-bold block">Ctrl+S</span>
+                <span className="text-slate-400 text-[10px]">Lưu nháp ngay</span>
+              </div>
             </div>
           </div>
 
@@ -134,7 +142,7 @@ export const QuickGuideModal: React.FC<QuickGuideModalProps> = ({ isOpen, onClos
           <div className="p-3 rounded-lg bg-sky-950/20 border border-sky-500/20 flex items-start gap-2 text-[11px] text-sky-200">
             <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
             <span>
-              <strong>Tự động lưu:</strong> Mọi thao tác gõ code đều tự động lưu vào trình duyệt. Bấm <strong>F5</strong> thoải mái không sợ mất bài. Nếu muốn quay về code mẫu ban đầu, bấm biểu tượng <strong>Đặt lại (Reset)</strong> trên thanh công cụ.
+              <strong>Tự động lưu &amp; Phím tắt:</strong> Mọi thao tác gõ code đều được lưu tự động liên tục vào máy (đóng tab hay tải lại trang không mất bài). Bạn có thể bấm phím <strong>F5</strong> để Chạy Thử nhanh (đã chặn reload trình duyệt) hoặc <strong>Ctrl+S</strong> để lưu nháp. Nếu muốn làm lại từ đầu với mẫu gốc, bấm nút <strong>Đặt lại (Reset)</strong> trên thanh công cụ.
             </span>
           </div>
         </div>

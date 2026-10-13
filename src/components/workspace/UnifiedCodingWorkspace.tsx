@@ -354,6 +354,24 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
     setBottomTab('terminal')
   }
 
+  // Global Keyboard Shortcuts (Intercept F5 to Run Code, Ctrl+S to Save Draft without browser reload)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Intercept F5: Do not reload browser! Run the C code instead!
+      if (e.key === 'F5') {
+        e.preventDefault()
+        handleRunCode()
+      }
+      // Intercept Ctrl+S / Cmd+S: Save draft immediately
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault()
+        saveExerciseCode(currentLab.id, code)
+      }
+    }
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [code, currentLab, isVimMode, vimCurrentMode])
+
   const handleExecuteTerminalCommand = (cmd: string) => {
     // If program is currently paused waiting for interactive stdin input:
     if (awaitingStdin) {
@@ -722,38 +740,38 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[#070b12] text-slate-100 font-sans select-none">
       {/* 1. Header tinh gọn 48px với Level Selector & Random Navigator */}
-      <header className="h-12 shrink-0 bg-[#090d16] border-b border-slate-800/80 px-4 flex items-center justify-between gap-3 z-10">
-        {/* Left: Brand & Difficulty Level Selector */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-slate-100 shrink-0">
+      {/* 1. Header tinh gọn 48px với 3 vùng rõ ràng: Trái (Bài/Cấp độ) | Giữa (Focus HUD) | Phải (Actions) */}
+      <header className="h-12 shrink-0 bg-[#090d16] border-b border-slate-800/80 px-3 sm:px-4 flex items-center justify-between gap-2 z-10 select-none">
+        {/* Left: Brand & Difficulty Level Selector & Stepper */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0">
+          <div className="flex items-center gap-1 font-mono text-xs font-bold text-slate-100 shrink-0">
             <span className="text-sky-400">&gt;_</span>
-            <span className="hidden sm:inline">SysLearn C</span>
+            <span className="hidden sm:inline">SysLearn</span>
           </div>
 
-          <div className="h-4 w-[1px] bg-slate-800 shrink-0" />
+          <div className="h-4 w-[1px] bg-slate-800 shrink-0 hidden sm:block" />
 
           {/* Difficulty Level Dropdown Selector */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-slate-500 font-medium hidden md:inline">Mức độ:</span>
+          <div className="flex items-center gap-1">
             <select
               value={selectedLevel}
               onChange={(e) => {
                 const val = e.target.value === 'all' ? 'all' : Number(e.target.value)
                 handleLevelChange(val as any)
               }}
-              className="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs rounded-md px-2.5 py-1 outline-none focus:border-sky-500 font-medium cursor-pointer max-w-[210px] sm:max-w-[260px] truncate"
+              className="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs rounded-md px-2 py-1 outline-none focus:border-sky-500 font-medium cursor-pointer max-w-[130px] sm:max-w-[170px] truncate"
             >
-              <option value="all">Tất cả mức độ ({allExercises.length} bài)</option>
-              <option value={1}>Mức 1: Nhập môn C &amp; I/O</option>
-              <option value={2}>Mức 2: Cơ bản &amp; Toán học</option>
-              <option value={3}>Mức 3: Toán tử Bit &amp; Con trỏ</option>
+              <option value="all">Tất cả ({allExercises.length} bài)</option>
+              <option value={1}>Mức 1: Nhập môn C</option>
+              <option value={2}>Mức 2: Cơ bản &amp; Toán</option>
+              <option value={3}>Mức 3: Bit &amp; Con trỏ</option>
               <option value={4}>Mức 4: Nâng cao &amp; Bộ nhớ</option>
-              <option value={5}>Mức 5: Chuyên sâu Hệ thống</option>
+              <option value={5}>Mức 5: Hệ thống</option>
             </select>
           </div>
 
           {/* Prev (<) · Shuffle (🔀) · Next (>) Random Navigation */}
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-md p-0.5">
+          <div className="flex items-center gap-0.5 bg-slate-900 border border-slate-800 rounded-md p-0.5 shrink-0">
             <button
               onClick={handlePrevProblem}
               disabled={historyIndex === 0}
@@ -781,150 +799,157 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
           </div>
 
           {isCurrentLabCompleted && (
-            <span className="hidden xl:inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
+            <span className="hidden 2xl:inline-flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
               <CheckCircle2 className="w-3 h-3" /> Đạt
             </span>
           )}
         </div>
 
         {/* Center: In-App Focus Timer & Gamification HUD */}
-        <div className="flex items-center">
+        <div className="flex items-center shrink-0">
           <FocusGamificationHUD completedLabIds={completedLabIds} />
         </div>
 
-        {/* Right: History, Add Exercise, Vim Mode, Run, Submit */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* History Button */}
-          <button
-            onClick={() => setIsHistoryDrawerOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors cursor-pointer"
-            title="Xem danh sách các bài đã làm"
-          >
-            <Clock className="w-3 h-3 text-sky-400" />
-            <span>Lịch Sử</span>
-            <span className="text-[10px] text-slate-500">({historyItems.length})</span>
-          </button>
+        {/* Right: Quick Tools & Run/Submit */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Secondary Tools Cluster */}
+          <div className="flex items-center gap-1">
+            {/* Vim Mode Indicator */}
+            <button
+              onClick={() => setIsVimMode(!isVimMode)}
+              className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-mono border transition-colors cursor-pointer ${
+                isVimMode
+                  ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+              }`}
+              title="Bật/Tắt chế độ Vim"
+            >
+              <Keyboard className="w-3 h-3" />
+              <span>{isVimMode ? 'Vim: ON' : 'Vim: OFF'}</span>
+            </button>
 
-          {/* Update Announcement Broadcast Bell */}
-          <button
-            onClick={() => {
-              setIsAnnouncementOpen(true)
-              setHasUnreadNews(false)
-            }}
-            className={`relative flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono transition-colors cursor-pointer border ${
-              hasUnreadNews
-                ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
-                : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
-            }`}
-            title="Thông báo cập nhật bài tập mới (Broadcast all clients)"
-          >
-            <Bell className={`w-3.5 h-3.5 ${hasUnreadNews ? 'text-amber-400' : 'text-slate-400'}`} />
-            <span className="hidden sm:inline">Bài Mới</span>
-            {hasUnreadNews && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
-            )}
-            {hasUnreadNews && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400" />
-            )}
-          </button>
+            {/* History Button */}
+            <button
+              onClick={() => setIsHistoryDrawerOpen(true)}
+              className="flex items-center gap-1 p-1 sm:px-2 py-1 rounded-md text-xs font-mono bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors cursor-pointer"
+              title="Xem danh sách các bài đã làm"
+            >
+              <Clock className="w-3.5 h-3.5 text-sky-400" />
+              <span className="hidden md:inline">Lịch Sử</span>
+              <span className="text-[10px] text-slate-500 hidden sm:inline">({historyItems.length})</span>
+            </button>
 
-          {/* Vim Mode Indicator */}
-          <button
-            onClick={() => setIsVimMode(!isVimMode)}
-            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-mono border transition-colors cursor-pointer ${
-              isVimMode
-                ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
-            }`}
-            title="Bật/Tắt chế độ Vim"
-          >
-            <Keyboard className="w-3 h-3" />
-            <span className="hidden sm:inline">Vim:</span>
-            <span>{isVimMode ? 'ON' : 'OFF'}</span>
-          </button>
+            {/* Update Announcement Broadcast Bell */}
+            <button
+              onClick={() => {
+                setIsAnnouncementOpen(true)
+                setHasUnreadNews(false)
+              }}
+              className={`relative flex items-center gap-1 p-1 sm:px-2 py-1 rounded-md text-xs font-mono transition-colors cursor-pointer border ${
+                hasUnreadNews
+                  ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
+                  : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
+              }`}
+              title="Thông báo cập nhật bài tập mới"
+            >
+              <Bell className={`w-3.5 h-3.5 ${hasUnreadNews ? 'text-amber-400' : 'text-slate-400'}`} />
+              <span className="hidden md:inline">Bài Mới</span>
+              {hasUnreadNews && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+              )}
+              {hasUnreadNews && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400" />
+              )}
+            </button>
 
-          {/* Auto-saved badge */}
-          <div className="hidden xl:flex items-center gap-1 text-[11px] text-emerald-400 font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 select-none" title="Tiến trình làm bài được tự động lưu liên tục (F5 không mất)">
-            <Check className="w-3 h-3 text-emerald-400" />
-            <span>Tự lưu nháp</span>
+            {/* Quick Guide Button */}
+            <button
+              onClick={() => setIsQuickGuideOpen(true)}
+              className="flex items-center gap-1 p-1 sm:px-2 py-1 rounded text-xs font-mono text-slate-300 hover:text-slate-100 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer"
+              title="Cẩm nang 1 phút &amp; Phím tắt Vim"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
+              <span className="hidden lg:inline">Mẹo</span>
+            </button>
+
+            {/* Reset Code */}
+            <button
+              onClick={() => {
+                if (window.confirm('Khôi phục mã nguồn ban đầu của bài này? Toàn bộ sửa đổi nháp sẽ bị xóa.')) {
+                  clearSavedExerciseCode(currentLab.id)
+                  setCode(currentLab.scaffoldingCode)
+                }
+              }}
+              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Đặt lại code ban đầu (xóa bản nháp)"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Solution */}
+            <button
+              onClick={() => setShowSolution(!showSolution)}
+              className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
+              title={showSolution ? 'Ẩn lời giải' : 'Xem lời giải mẫu'}
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Auto-saved subtle check indicator */}
+            <div className="p-1 text-emerald-400" title="Mã nguồn tự động lưu nháp liên tục (Đóng tab không mất code)">
+              <Check className="w-3.5 h-3.5" />
+            </div>
           </div>
 
-          {/* Reset Code */}
-          <button
-            onClick={() => {
-              if (window.confirm('Khôi phục mã nguồn ban đầu của bài này? Toàn bộ sửa đổi nháp sẽ bị xóa.')) {
-                clearSavedExerciseCode(currentLab.id)
-                setCode(currentLab.scaffoldingCode)
-              }
-            }}
-            className="p-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
-            title="Đặt lại code ban đầu (xóa bản nháp)"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
+          <div className="h-4 w-[1px] bg-slate-800 shrink-0" />
 
-          {/* Solution */}
-          <button
-            onClick={() => setShowSolution(!showSolution)}
-            className="p-1.5 rounded text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
-            title={showSolution ? 'Ẩn lời giải' : 'Xem lời giải mẫu'}
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
+          {/* Primary Action Buttons: Run & Submit */}
+          <div className="flex items-center gap-1.5">
+            {/* Run Code (F5) */}
+            {isVimMode && vimCurrentMode.includes('INSERT') ? (
+              <button
+                onClick={() => handleRunCode()}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border border-amber-600/50 text-xs font-mono font-medium cursor-pointer transition-all ring-1 ring-amber-500/30 shrink-0"
+                title="Vim đang ở INSERT! Bấm phím [Esc] để về NORMAL trước khi chạy."
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span>INSERT (Bấm Esc)</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => handleRunCode()}
+                disabled={isRunning}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 shrink-0"
+                title="Biên dịch và chạy thử (Phím F5 hoặc :wq trong Vim)"
+              >
+                <Play className="w-3 h-3 fill-current text-emerald-400" />
+                <span>Chạy Thử</span>
+                <span className="text-[10px] text-slate-400 font-mono hidden xl:inline">(F5)</span>
+              </button>
+            )}
 
-          {/* Run Code */}
-          {isVimMode && vimCurrentMode.includes('INSERT') ? (
-            <button
-              onClick={() => handleRunCode()}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border border-amber-600/50 text-xs font-mono font-medium cursor-pointer transition-all ring-1 ring-amber-500/30"
-              title="Vim đang ở chế độ INSERT! Bấm phím [Esc] để quay lại NORMAL trước khi lưu và chạy."
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              <span>INSERT (Bấm Esc)</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => handleRunCode()}
-              disabled={isRunning}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50"
-              title="Biên dịch và chạy thử (Hoặc dùng :wq trong Vim NORMAL mode)"
-            >
-              <Play className="w-3 h-3 fill-current text-emerald-400" />
-              <span className="hidden sm:inline">Chạy Thử</span>
-            </button>
-          )}
-
-          {/* Submit */}
-          {isVimMode && vimCurrentMode.includes('INSERT') ? (
-            <button
-              onClick={() => handleSubmitTests()}
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-md bg-slate-900 text-slate-500 border border-slate-800 text-xs font-medium cursor-not-allowed opacity-60"
-              title="Vim đang ở chế độ INSERT. Hãy bấm [Esc] trước khi nộp bài!"
-            >
-              <Send className="w-3 h-3" />
-              <span>Nộp Bài</span>
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmitTests}
-              disabled={isRunning}
-              className="flex items-center gap-1.5 px-3.5 py-1 rounded-md bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold cursor-pointer transition-colors shadow-sm disabled:opacity-50"
-              title="Chấm toàn bộ test case"
-            >
-              <Send className="w-3 h-3" />
-              <span>Nộp Bài</span>
-            </button>
-          )}
-
-          {/* Quick Guide Cheatsheet Button */}
-          <button
-            onClick={() => setIsQuickGuideOpen(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs font-mono text-slate-300 hover:text-slate-100 hover:bg-slate-800 border border-slate-800 transition-colors cursor-pointer ml-1"
-            title="Cẩm nang 1 phút hướng dẫn sử dụng & Phím tắt Vim"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden md:inline">Hướng Dẫn</span>
-          </button>
+            {/* Submit */}
+            {isVimMode && vimCurrentMode.includes('INSERT') ? (
+              <button
+                onClick={() => handleSubmitTests()}
+                className="flex items-center gap-1 px-3 py-1 rounded-md bg-slate-900 text-slate-500 border border-slate-800 text-xs font-medium cursor-not-allowed opacity-60 shrink-0"
+                title="Vim đang ở chế độ INSERT. Hãy bấm [Esc] trước khi nộp bài!"
+              >
+                <Send className="w-3 h-3" />
+                <span>Nộp Bài</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmitTests}
+                disabled={isRunning}
+                className="flex items-center gap-1.5 px-3.5 py-1 rounded-md bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold cursor-pointer transition-colors shadow-sm disabled:opacity-50 shrink-0"
+                title="Chấm toàn bộ test case"
+              >
+                <Send className="w-3 h-3" />
+                <span>Nộp Bài</span>
+              </button>
+            )}
+          </div>
         </div>
       </header>
 

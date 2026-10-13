@@ -25,8 +25,8 @@ export const PeriodicGuideToast: React.FC = () => {
   if (!isVisible) return null
 
   return (
-    <div className="fixed bottom-5 right-5 z-40 max-w-sm w-full animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <div className="bg-[#0b101c]/95 backdrop-blur-md border border-sky-500/30 rounded-xl p-4 shadow-2xl text-xs text-slate-200 space-y-2.5 ring-1 ring-sky-500/20">
+    <div className="fixed bottom-4 left-4 z-40 max-w-xs w-full animate-in fade-in slide-in-from-bottom-3 duration-300">
+      <div className="bg-[#0b101c]/95 backdrop-blur-md border border-sky-500/30 rounded-xl p-3.5 shadow-2xl text-xs text-slate-200 space-y-2 ring-1 ring-sky-500/20">
         {/* Header */}
         <div className="flex items-center justify-between pb-1 border-b border-slate-800">
           <div className="flex items-center gap-1.5 text-sky-400 font-bold font-mono text-[11px]">
@@ -43,7 +43,7 @@ export const PeriodicGuideToast: React.FC = () => {
         </div>
 
         {/* 3 Quick Bullets */}
-        <div className="space-y-1.5 text-[11px] text-slate-300">
+        <div className="space-y-1 text-[11px] text-slate-300">
           <div className="flex items-start gap-1.5">
             <span className="text-amber-400 font-bold">1.</span>
             <span>Bấm <kbd className="px-1 rounded bg-slate-800 border border-slate-700 text-amber-300 font-mono">i</kbd> sửa code. Khi xong, <strong>bắt buộc bấm <kbd className="px-1 rounded bg-slate-800 border border-slate-700 text-sky-300 font-mono">Esc</kbd></strong> về NORMAL trước khi lưu/chạy.</span>
@@ -51,12 +51,12 @@ export const PeriodicGuideToast: React.FC = () => {
 
           <div className="flex items-start gap-1.5">
             <span className="text-emerald-400 font-bold">2.</span>
-            <span>Gõ <code className="text-emerald-300 font-mono">:wq</code> hoặc bấm <strong>Chạy Thử</strong> để kiểm tra lỗi GCC tại Terminal Linux.</span>
+            <span>Gõ <code className="text-emerald-300 font-mono">:wq</code> hoặc bấm <strong>Chạy Thử</strong> (hoặc phím <kbd className="px-1 rounded bg-slate-800 border border-slate-700 text-emerald-300 font-mono">F5</kbd>) để check lỗi GCC.</span>
           </div>
 
           <div className="flex items-start gap-1.5">
             <span className="text-sky-400 font-bold">3.</span>
-            <span>F5 tự lưu mã liên tục. Đồng hồ đếm giờ tự tích lũy thời gian tập trung thực tế trong app.</span>
+            <span>Mã nguồn tự lưu nháp liên tục (đóng tab không mất). Đồng hồ tự đếm giờ khi bạn ở trong app.</span>
           </div>
         </div>
 

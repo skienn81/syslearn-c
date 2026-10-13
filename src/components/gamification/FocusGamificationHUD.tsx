@@ -113,37 +113,36 @@ export const FocusGamificationHUD: React.FC<FocusGamificationHUDProps> = ({
       {/* Sleek, Compact Gamification Pill on Header */}
       <div 
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 rounded-md bg-[#0e1526] hover:bg-[#131d33] border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all select-none group"
+        className="flex items-center gap-1.5 sm:gap-2 px-2 py-1 rounded-md bg-[#0e1526] hover:bg-[#131d33] border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all select-none shrink-0"
         title="Bấm để xem Thống kê giờ học & Hồ sơ chinh phục"
       >
         {/* Active Focus Timer */}
         <div className="flex items-center gap-1.5 font-mono text-xs">
           {isAppFocused ? (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Đang tập trung trong app" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Đang tập trung trong app" />
           ) : (
-            <span className="w-2 h-2 rounded-full bg-amber-500" title="Đã tạm dừng (Bạn vừa ra ngoài app)" />
+            <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" title="Đã tạm dừng (Bạn vừa ra ngoài app)" />
           )}
 
-          <span className={isAppFocused ? 'text-slate-200 font-semibold' : 'text-amber-400/80 italic'}>
+          <span className={`tabular-nums text-[11px] sm:text-xs ${isAppFocused ? 'text-slate-200 font-semibold' : 'text-amber-400/80 italic'}`}>
             {isAppFocused ? formatTimer(sessionSeconds) : 'Tạm dừng'}
           </span>
         </div>
 
-        <div className="h-3 w-[1px] bg-slate-800 hidden sm:block" />
+        <div className="h-3 w-[1px] bg-slate-800 hidden lg:block" />
 
         {/* Streak */}
-        <div className="hidden sm:flex items-center gap-1 text-xs font-mono text-amber-400" title={`Chuỗi học: ${state.streakDays} ngày`}>
-          <Flame className="w-3.5 h-3.5 fill-current text-amber-400" />
+        <div className="hidden lg:flex items-center gap-1 text-xs font-mono text-amber-400" title={`Chuỗi học: ${state.streakDays} ngày`}>
+          <Flame className="w-3 h-3 fill-current text-amber-400" />
           <span>{state.streakDays}d</span>
         </div>
 
-        <div className="h-3 w-[1px] bg-slate-800 hidden md:block" />
+        <div className="h-3 w-[1px] bg-slate-800 hidden xl:block" />
 
         {/* Level & XP */}
-        <div className="hidden md:flex items-center gap-1 text-xs font-mono text-sky-300">
+        <div className="hidden xl:flex items-center gap-1 text-xs font-mono text-sky-300">
           <Trophy className="w-3 h-3 text-sky-400" />
           <span className="text-[11px] font-bold">Cấp {state.level}</span>
-          <span className="text-[10px] text-slate-500">({state.xp} XP)</span>
         </div>
       </div>
 
