@@ -15,25 +15,30 @@ export interface SystemAnnouncement {
 }
 
 export const LATEST_ANNOUNCEMENT: SystemAnnouncement = {
-  id: 'announcement_2026_10_13_v2',
-  version: '2.2.0',
-  timestamp: '13/10/2026',
-  title: 'Kho Bài Tập C & Hệ Thống Vừa Được Cập Nhật!',
-  summary: 'Hệ thống vừa cập nhật các bài tập C mới chuẩn kỳ thi thực hành Lập Trình Hệ Thống (LTHT) trên Linux. Bàn luyện code đã được tinh chỉnh giống chuẩn Linux Terminal & Vim thật.',
-  newExercisesCount: 15,
+  id: 'announcement_2026_10_14_v2_3',
+  version: '2.3.0',
+  timestamp: '14/10/2026',
+  title: 'Cập Nhật 44 Bài Lab Giáo Trình Mới & Giảm Gợi Ý Mức 1 - 2!',
+  summary: 'Hệ thống đã nạp trọn bộ 44 bài tập thực hành chính thức từ giáo trình Lab 2, Lab 3, Lab 4/5 Structs. Đặc biệt, hệ thống đã lược bỏ gợi ý ở Mức 1 & 2 để bạn tự tay gõ từng dòng mã C, giúp khắc sâu cú pháp cốt lõi.',
+  newExercisesCount: 44,
   newExercisesList: [
-    { id: 'lab1_01', title: 'Lệnh Linux cơ bản (pwd, ls, mkdir, cd)', level: 1, topic: 'Linux Shell' },
-    { id: 'lab2_01', title: 'Tính tổng mảng và thao tác con trỏ', level: 2, topic: 'Pointers' },
-    { id: 'lab3_01', title: 'Quản lý bộ nhớ động malloc & free', level: 3, topic: 'Dynamic Memory' },
-    { id: 'lab4_01', title: 'Đọc ghi tệp tin nhị phân & Struct', level: 4, topic: 'File I/O & Struct' },
-    { id: 'lab5_01', title: 'Tạo và đồng bộ tiến trình (fork & wait)', level: 5, topic: 'System Calls' },
+    { id: 'lab2_01', title: 'Lab 2: Biến, Kiểu Dữ Liệu & In Ấn Cơ Bản', level: 1, topic: 'Variables & Formats' },
+    { id: 'lab2_04', title: 'Lab 2: Xếp Loại Học Lực & Câu Lệnh Điều Kiện', level: 2, topic: 'Control Flow' },
+    { id: 'lab2_07', title: 'Lab 2: Kiểm Tra Số Nguyên Tố & Vòng Lặp', level: 2, topic: 'Loops & Primes' },
+    { id: 'lab2_10', title: 'Lab 2: Quản Lý Điểm Sinh Viên & Thống Kê Mảng', level: 2, topic: 'Arrays' },
+    { id: 'lab2_14', title: 'Lab 2: Kiểm Tra Chuỗi Con (Substring Search)', level: 2, topic: 'Strings' },
+    { id: 'lab3_01', title: 'Lab 3: Máy Tính Tiền Điện Bậc Thang', level: 2, topic: 'Branches & Rates' },
+    { id: 'lab3_06', title: 'Lab 3: Đệ Quy Tính Tổng, Giai Thừa, Lũy Thừa', level: 2, topic: 'Recursion' },
+    { id: 'lab3_11', title: 'Lab 3: Hoán Đổi & Trả Kết Quả Bằng Con Trỏ', level: 3, topic: 'Pointers' },
+    { id: 'lab3_16', title: 'Lab 3: Cấp Phát Bộ Nhớ Động (malloc & realloc)', level: 3, topic: 'Dynamic Memory' },
+    { id: 'lab4_01', title: 'Lab 4/5: Cấu Trúc Dữ Liệu struct, union & Danh Sách Liên Kết', level: 4, topic: 'Structs & Unions' },
   ],
   notes: [
-    'Tự động lưu mã nguồn liên tục: F5 trình duyệt không bao giờ bị mất bài.',
-    'Chuẩn phản xạ Vim: Trong chế độ -- INSERT --, bạn bấm phím [Esc] để về NORMAL trước khi dùng :wq hoặc Chạy Thử.',
-    'Chạy Thử: Tự động chuyển sang Terminal Linux để kiểm tra cú pháp và cảnh báo GCC.',
-    'Nộp Bài: Tự động chạy và chấm toàn bộ Test Cases.',
-    'Bài tập mới sẽ tiếp tục được cập nhật liên tục trực tiếp từ giáo trình và đề thi!',
+    'Giảm gợi ý Mức 1 & 2: Buộc người học phải tự gõ #include, main(), kiểu dữ liệu và scanf để rèn phản xạ cú pháp thay vì phụ thuộc khung code có sẵn.',
+    '44 bài Lab đa dạng: Bao trùm toàn diện từ Biến, Bitwise, Vòng lặp, Mảng, Chuỗi, Hàm đệ quy, Con trỏ, malloc/realloc đến struct/union và danh sách liên kết.',
+    'Giả lập C Engine nâng cấp: Hỗ trợ chuẩn xác realloc(), struct, union, mảng struct, toán tử mũi tên -> và bóc tách định dạng %d, %f, %s, %u, 0x%08X.',
+    'Lời giải mẫu luôn sẵn sàng: Khi bạn hoàn thành hoặc bí ý tưởng, bạn luôn có thể mở tab Lời giải để đối chiếu và học hỏi cách viết tối ưu.',
+    'Học đan xen lý thuyết & thực hành: Đừng ngần ngại hỏi trực tiếp tại bàn học khi gặp khúc mắc cú pháp hoặc lỗi logic!',
   ]
 }
 

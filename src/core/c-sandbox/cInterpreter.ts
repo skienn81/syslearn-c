@@ -177,10 +177,16 @@ export function runCCode(
     }
 
     const __scanf = (_fmt: string, ...targetRefs: any[]) => {
+      // If we have input tokens and already consumed all of them, return 0 (EOF)
+      if (stdinTokens.length > 0 && stdinIndex >= stdinTokens.length) {
+        return 0
+      }
+
+      let readCount = 0
       for (const target of targetRefs) {
         // In real C, scanf requires a pointer address. If student forgot '&':
         // target is a primitive value instead of a ref pointer -> Segmentation Fault!
-        if (target !== null && target !== undefined && !target.__isRef && !Array.isArray(target)) {
+        if (target !== null && target !== undefined && !target.__isRef && !Array.isArray(target) && typeof target !== 'object') {
           throw new Error(
             `Segmentation fault (core dumped)\n[Process terminated by SIGSEGV (signal 11)]\n` +
             `Lỗi truy cập bộ nhớ: Hàm scanf yêu cầu con trỏ ô nhớ (&), nhưng nhận được giá trị '${target}'. ` +
@@ -193,14 +199,25 @@ export function runCCode(
           const raw = stdinTokens[stdinIndex++]
           const num = Number(raw)
           val = isNaN(num) ? raw : num
-        } else {
+          readCount++
+        } else if (stdinTokens.length === 0) {
           val = 20
+          readCount++
+        } else {
+          break
         }
 
         if (target && target.__isRef) {
           target.set(val)
+        } else if (Array.isArray(target)) {
+          target.length = 0
+          for (const ch of String(val)) {
+            target.push(ch)
+          }
+          target.push(0)
         }
       }
+      return readCount
     }
 
     const __ref = (getter: () => any, setter: (val: any) => void, name: string): RefPointer => ({
@@ -245,6 +262,7 @@ export function runCCode(
       printf: __printf,
       scanf: __scanf,
       malloc: __malloc,
+      realloc: (ptr: any, size: number) => ptr || __malloc(size),
       free: __free,
       NULL: null,
       null: null,
@@ -338,10 +356,40 @@ export function transpileCToJS(cCode: string): string {
   code = code.replace(/sizeof\s*\(\s*long\s*\)/g, '8')
   code = code.replace(/sizeof\s*\(\s*float\s*\)/g, '4')
   code = code.replace(/sizeof\s*\(\s*double\s*\)/g, '8')
-  code = code.replace(/sizeof\s*\(\s*size_t\s*\)/g, '8')
+  // 4.1 Transform integer division truncation for digit extraction (e.g. n / 10, n /= 10)
+  code = code.replace(/([a-zA-Z_]\w*)\s*\/=\s*(\d+)/g, '$1 = Math.trunc($1 / $2)')
+  code = code.replace(/([a-zA-Z_]\w*)\s*\/\s*10\b/g, 'Math.trunc($1 / 10)')
 
-  // 5. Remove struct definition blocks from runtime execution
+  // 4.2 Transform null-terminator loop condition: str[i] != '\0'
+  code = code.replace(/([a-zA-Z_]\w*\[[^\]]+\])\s*!=\s*('\\0'|"\\0"|0)/g, 'Boolean($1) && $1 !== "\\0" && $1 !== 0')
+
+  // 5. Remove struct and union definition blocks from runtime execution
+  code = code.replace(/typedef\s+struct(?:\s+\w+)?\s*\{[\s\S]*?\}\s*(\w+);/g, '')
+  code = code.replace(/typedef\s+enum(?:\s+\w+)?\s*\{[\s\S]*?\}\s*(\w+);/g, '')
   code = code.replace(/struct\s+[a-zA-Z_]\w*\s*\{[\s\S]*?\};/g, '')
+  code = code.replace(/union\s+[a-zA-Z_]\w*\s*\{[\s\S]*?\};/g, '')
+  code = code.replace(/enum\s+[a-zA-Z_]\w*\s*\{[\s\S]*?\};/g, '')
+
+  // 5.1 Transform arrow operator: p->x -> (p.__isRef ? p.get() : p).x
+  code = code.replace(/([a-zA-Z_]\w*)->([a-zA-Z_]\w*)/g, '($1.__isRef ? $1.get() : $1).$2')
+  code = code.replace(/->/g, '.')
+
+  // 5.2 Avoid JS reserved word 'with'
+  code = code.replace(/\bwith\b/g, 'with_val')
+
+  // 5.3 Transform struct/union/typedef variable and array declarations
+  code = code.replace(
+    /(?:(?:struct|union)\s+\w+|Student|SensorData|Account|Point|Node|Measurement)\s+([a-zA-Z_]\w*)\s*\[\s*(\d+)\s*\]\s*;/g,
+    'let $1 = new Array($2).fill(null).map(() => ({ name: [] }));'
+  )
+  code = code.replace(
+    /(?:(?:struct|union)\s+\w+|Student|SensorData|Account|Point|Node|Measurement)\s+([a-zA-Z_]\w*)\s*;/g,
+    'let $1 = { name: [] };'
+  )
+  code = code.replace(
+    /(?:(?:struct|union)\s+\w+|Student|SensorData|Account|Point|Node|Measurement)\s*\*\s*([a-zA-Z_]\w*)\s*=\s*(?:\([^)]+\)\s*)?malloc\([^)]+\);/g,
+    'let $1 = { name: [] };'
+  )
 
   // 6. Transform float constants: 100.0f -> 100.0, 5.0f -> 5.0
   code = code.replace(/([0-9]+\.?[0-9]*)f\b/gi, '$1')
@@ -373,7 +421,11 @@ export function transpileCToJS(cCode: string): string {
     (_m, _type, name, val) => `let ${name} = ${val ? val.trim() : 'null'};`
   )
 
-  // 12. Transform pointer dereference write: *p = val; -> __deref_set(p, val);
+  // 12. Transform pointer dereference write: *p += val, *p = val;
+  code = code.replace(/\*\s*([a-zA-Z_]\w*)\s*(\+=|-=|\*=|\/=|%=)\s*([^;]+);/g, (_m, varName, op, expr) => {
+    const pureOp = op.slice(0, -1)
+    return `__deref_set(${varName}, __deref(${varName}) ${pureOp} (${expr}));`
+  })
   code = code.replace(/\*\s*([a-zA-Z_]\w*)\s*=\s*([^;]+);/g, '__deref_set($1, $2);')
 
   // 13. Transform array pointer dereferences: *(arr + expr) -> arr[expr], *(arr) -> arr[0]
@@ -386,10 +438,18 @@ export function transpileCToJS(cCode: string): string {
     'let $1 = Array.from($2).concat([0]);'
   )
 
-  // 15. Transform array initialization: int arr[3] = {10, 20, 30}; -> let arr = [10, 20, 30];
+  // 15. Transform array initialization & uninitialized arrays
   code = code.replace(
     /(unsigned\s+char|char|int|short|long|float|double)\s+([a-zA-Z_]\w*)\s*\[\s*\d*\s*\]\s*=\s*\{([^}]*)\};/g,
     'let $2 = [$3];'
+  )
+  code = code.replace(
+    /(unsigned\s+char|char|int|short|long|float|double)\s+([a-zA-Z_]\w*)\s*\[[^\]]*\]\s*\[[^\]]*\]\s*;/g,
+    'let $2 = [];'
+  )
+  code = code.replace(
+    /(unsigned\s+char|char|int|short|long|float|double)\s+([a-zA-Z_]\w*)\s*\[[^\]]*\]\s*;/g,
+    'let $2 = [];'
   )
 
   // 16. Transform function parameter definitions:
@@ -411,10 +471,10 @@ export function transpileCToJS(cCode: string): string {
     return `function ${funcName}(${cleanParams}) {`
   })
 
-  // 17. Transform address-of in function calls:
+  // 17. Transform address-of in function calls (variables and struct members):
   // e.g., swap(&x, &y) -> swap(__ref(() => x, (v) => { x = v; }, 'x'), __ref(() => y, (v) => { y = v; }, 'y'))
-  // e.g., scanf("%d", &age) -> scanf("%d", __ref(() => age, (v) => { age = v; }, 'age'))
-  code = code.replace(/([,\(])\s*&([a-zA-Z_]\w*)/g, "$1 __ref(() => $2, (v) => { $2 = v; }, '$2')")
+  // e.g., scanf("%d", &r.x) -> scanf("%d", __ref(() => r.x, (v) => { r.x = v; }, 'r.x'))
+  code = code.replace(/([,\(])\s*&([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*|\[[^\]]+\])*)/g, "$1 __ref(() => $2, (v) => { $2 = v; }, '$2')")
 
   // 18. Transform read dereference inside expressions:
   // *a -> __deref(a)
@@ -424,15 +484,24 @@ export function transpileCToJS(cCode: string): string {
   code = code.replace(/\bfor\s*\(\s*(unsigned\s+char|char|int|short|long|float|double|size_t)\s+/g, 'for (let ')
 
   // 20. Transform variable declarations:
+  // int a, b, c; -> let a = 0, b = 0, c = 0;
   // int x = 10, y = 20; -> let x = 10, y = 20;
   // int x; -> let x = 0;
   code = code.replace(
-    /\b(unsigned\s+char|char|int|short|long|float|double|size_t)\s+([a-zA-Z_]\w*)(?:\s*=\s*([^;]+))?;/g,
-    (_match, _type, varName, initVal) => {
-      if (initVal !== undefined) {
-        return `let ${varName} = ${initVal};`
-      }
-      return `let ${varName} = 0;`
+    /\b(?:const\s+)?(unsigned\s+char|char|int|short|long|float|double|size_t)\s+([a-zA-Z_]\w*(?:\s*=\s*[^,;]+|\s*\[[^\]]*\])?(?:\s*,\s*[a-zA-Z_]\w*(?:\s*=\s*[^,;]+|\s*\[[^\]]*\])?)*)\s*;/g,
+    (_match, _type, declList) => {
+      const decls = declList.split(',').map((d: string) => {
+        const trimmed = d.trim()
+        if (trimmed.includes('=')) {
+          return trimmed
+        }
+        if (trimmed.includes('[')) {
+          const arrName = trimmed.match(/^([a-zA-Z_]\w*)/)
+          return `${arrName ? arrName[1] : trimmed} = []`
+        }
+        return `${trimmed} = 0`
+      })
+      return `let ${decls.join(', ')};`
     }
   )
 

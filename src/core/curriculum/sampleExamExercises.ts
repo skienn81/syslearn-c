@@ -14,14 +14,8 @@ export const SAMPLE_EXAM_EXERCISES: LabExercise[] = [
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    int a, b, c;
-    if (scanf("%d %d %d", &a, &b, &c) != 3) return 1;
+    /* TODO: Tự khai báo biến, nhập liệu 3 số và in số lớn nhất theo định dạng "Max: %d\n" */
     
-    int max = a;
-    if (b > max) max = b;
-    if (c > max) max = c;
-    
-    printf("Max: %d\\n", max);
     return 0;
 }
 `,
@@ -60,12 +54,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    float c;
-    if (scanf("%f", &c) != 1) return 1;
+    /* TODO: Nhập nhiệt độ C (float) và in độ F với 2 chữ số thập phân "%.2f\n" */
     
-    /* TODO: Tính F và in định dạng %.2f */
-    float f = c * 9.0 / 5.0 + 32.0;
-    printf("%.2f\\n", f);
     return 0;
 }
 `,
@@ -100,15 +90,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    int n;
-    if (scanf("%d", &n) != 1) return 1;
+    /* TODO: Nhập số nguyên N và in tổng các số chẵn trong [1, N] theo định dạng "Tong: %lld\n" */
     
-    long long sum = 0;
-    for (int i = 2; i <= n; i += 2) {
-        sum += i;
-    }
-    
-    printf("Tong: %lld\\n", sum);
     return 0;
 }
 `,
@@ -147,22 +130,11 @@ int main() {
     theoryExplanation: 'Số nguyên tố là số nguyên > 1 chỉ chia hết cho 1 và chính nó. Chỉ cần kiểm tra các ước từ 2 đến căn bậc hai của N (i * i <= N).',
     scaffoldingCode: `#include <stdio.h>
 
-int is_prime(int n) {
-    if (n <= 1) return 0;
-    if (n <= 3) return 1;
-    if (n % 2 == 0 || n % 3 == 0) return 0;
-    for (int i = 5; i * i <= n; i += 6) {
-        if (n % i == 0 || n % (i + 2) == 0) return 0;
-    }
-    return 1;
-}
+/* TODO: Viết hàm is_prime(int n) kiểm tra số nguyên tố */
 
 int main() {
-    int n;
-    if (scanf("%d", &n) != 1) return 1;
+    /* TODO: Nhập số nguyên N và in "YES\n" hoặc "NO\n" */
     
-    if (is_prime(n)) printf("YES\\n");
-    else printf("NO\\n");
     return 0;
 }
 `,
@@ -207,19 +179,11 @@ int main() {
     theoryExplanation: 'Thuật toán Euclid: gcd(a, b) = gcd(b, a % b). Khi b == 0 thì gcd = a.',
     scaffoldingCode: `#include <stdio.h>
 
-int gcd(int a, int b) {
-    while (b != 0) {
-        int temp = a % b;
-        a = b;
-        b = temp;
-    }
-    return a;
-}
+/* TODO: Viết hàm gcd(int a, int b) tìm ước chung lớn nhất */
 
 int main() {
-    int a, b;
-    if (scanf("%d %d", &a, &b) != 2) return 1;
-    printf("GCD: %d\\n", gcd(a, b));
+    /* TODO: Nhập 2 số nguyên a, b và in "GCD: %d\n" */
+    
     return 0;
 }
 `,
@@ -262,16 +226,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    int n;
-    if (scanf("%d", &n) != 1) return 1;
+    /* TODO: Nhập số nguyên dương N và in số đảo ngược */
     
-    int rev = 0;
-    while (n > 0) {
-        rev = rev * 10 + (n % 10);
-        n /= 10;
-    }
-    
-    printf("%d\\n", rev);
     return 0;
 }
 `,
@@ -312,16 +268,13 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int is_power_of_two(int n) {
-    /* TODO: Dùng phép toán Bitwise O(1) */
-    return (n > 0) && ((n & (n - 1)) == 0);
+    /* TODO: Dùng phép toán Bitwise O(1) kiểm tra lũy thừa của 2 */
+    return 0;
 }
 
 int main() {
-    int n;
-    if (scanf("%d", &n) != 1) return 1;
+    /* TODO: Nhập N, gọi is_power_of_two và in YES hoặc NO */
     
-    if (is_power_of_two(n)) printf("YES\\n");
-    else printf("NO\\n");
     return 0;
 }
 `,
@@ -361,13 +314,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    int n, k;
-    if (scanf("%d %d", &n, &k) != 2) return 1;
+    /* TODO: Nhập n, k và in ra 2 số set_val và clear_val cách nhau dấu cách */
     
-    int set_val = n | (1 << k);
-    int clear_val = n & ~(1 << k);
-    
-    printf("%d %d\\n", set_val, clear_val);
     return 0;
 }
 `,
@@ -403,15 +351,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    int a, b;
-    if (scanf("%d %d", &a, &b) != 2) return 1;
+    /* TODO: Nhập 2 số a, b. Hoán đổi chỉ dùng toán tử ^ mà không dùng biến phụ */
     
-    /* TODO: Hoán đổi chỉ dùng a và b với toán tử ^ */
-    a ^= b;
-    b ^= a;
-    a ^= b;
-    
-    printf("%d %d\\n", a, b);
     return 0;
 }
 `,
@@ -449,18 +390,13 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int count_set_bits(unsigned int n) {
-    int count = 0;
-    while (n > 0) {
-        n &= (n - 1);
-        count++;
-    }
-    return count;
+    /* TODO: Đếm số bit 1 bằng thuật toán Kernighan */
+    return 0;
 }
 
 int main() {
-    unsigned int n;
-    if (scanf("%u", &n) != 1) return 1;
-    printf("Bits: %d\\n", count_set_bits(n));
+    /* TODO: Nhập n và in "Bits: %d\n" */
+    
     return 0;
 }
 `,
@@ -503,17 +439,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    int n;
-    if (scanf("%d", &n) != 1) return 1;
+    /* TODO: Nhập n phần tử và tìm phần tử xuất hiện 1 lần duy nhất bằng XOR */
     
-    int result = 0;
-    for (int i = 0; i < n; i++) {
-        int val;
-        scanf("%d", &val);
-        result ^= val;
-    }
-    
-    printf("Single: %d\\n", result);
     return 0;
 }
 `,
@@ -552,28 +479,12 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 void reverse_array(int *arr, int n) {
-    int *left = arr;
-    int *right = arr + n - 1;
-    while (left < right) {
-        int temp = *left;
-        *left = *right;
-        *right = temp;
-        left++;
-        right--;
-    }
+    /* TODO: Đảo ngược mảng bằng kỹ thuật 2 con trỏ */
 }
 
 int main() {
-    int n;
-    if (scanf("%d", &n) != 1) return 1;
-    int arr[100];
-    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    /* TODO: Nhập mảng, gọi reverse_array và in mảng */
     
-    reverse_array(arr, n);
-    
-    for (int i = 0; i < n; i++) {
-        printf("%d%c", arr[i], (i == n - 1) ? '\\n' : ' ');
-    }
     return 0;
 }
 `,
@@ -625,11 +536,8 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 int main() {
-    unsigned int r, g, b, a;
-    if (scanf("%u %u %u %u", &r, &g, &b, &a) != 4) return 1;
+    /* TODO: Nhập R, G, B, A (0-255) và đóng gói vào biến unsigned int 32-bit (in 0x%08X) */
     
-    unsigned int packed = (r << 24) | (g << 16) | (b << 8) | a;
-    printf("0x%08X\\n", packed);
     return 0;
 }
 `,
@@ -664,16 +572,13 @@ int main() {
     scaffoldingCode: `#include <stdio.h>
 
 unsigned char reverse_byte(unsigned char b) {
-    b = ((b & 0xF0) >> 4) | ((b & 0x0F) << 4);
-    b = ((b & 0xCC) >> 2) | ((b & 0x33) << 2);
-    b = ((b & 0xAA) >> 1) | ((b & 0x55) << 1);
-    return b;
+    /* TODO: Đảo ngược thứ tự 8 bit của byte */
+    return 0;
 }
 
 int main() {
-    unsigned int val;
-    if (scanf("%u", &val) != 1) return 1;
-    printf("%u\\n", (unsigned int)reverse_byte((unsigned char)val));
+    /* TODO: Nhập byte (0-255) và in số sau khi đảo bit */
+    
     return 0;
 }
 `,
@@ -715,14 +620,8 @@ int main() {
 #include <limits.h>
 
 int main() {
-    int a, b;
-    if (scanf("%d %d", &a, &b) != 2) return 1;
+    /* TODO: Kiểm tra tràn số cộng có dấu trước khi cộng a + b */
     
-    if ((a > 0 && b > INT_MAX - a) || (a < 0 && b < INT_MIN - a)) {
-        printf("OVERFLOW\\n");
-    } else {
-        printf("OK: %d\\n", a + b);
-    }
     return 0;
 }
 `,

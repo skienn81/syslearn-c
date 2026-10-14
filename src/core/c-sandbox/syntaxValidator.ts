@@ -171,7 +171,7 @@ export function validateCSyntax(rawCode: string, fileName: string = 'solution.c'
 
     // Check for missing comma between string literal and argument in function calls
     // e.g. printf("%d" age) or scanf("%d" &age)
-    const missingCommaMatch = line.match(/"\s+(&?[a-zA-Z_]\w*)/)
+    const missingCommaMatch = line.match(/"(?:[^"\\]|\\.)*"\s+(&?[a-zA-Z_]\w*)/)
     if (missingCommaMatch && line.includes('(') && line.includes(')')) {
       const col = (missingCommaMatch.index || 0) + missingCommaMatch[0].length
       const token = missingCommaMatch[1]
@@ -388,10 +388,10 @@ export function validateCSyntax(rawCode: string, fileName: string = 'solution.c'
       /^(?:const\s+|static\s+)?(?:unsigned\s+|signed\s+)?(char|short|int|long|float|double|size_t|struct\s+\w+)\s+(.+);?$/
     )
     if (typeMatch) {
-      const rest = typeMatch[2]
+      const rest = typeMatch[2].replace(/;+\s*$/, '')
       const decls = rest.split(',')
       for (const d of decls) {
-        const varMatch = d.trim().match(/(?:\*+\s*)?([a-zA-Z_]\w*)(?:\s*\[[^\]]*\])?(?:\s*=.*)?$/)
+        const varMatch = d.trim().match(/(?:\*+\s*)?([a-zA-Z_]\w*)(?:\s*\[[^\]]*\])*\s*(?:=.*)?$/)
         if (varMatch && !C_KEYWORDS.has(varMatch[1])) {
           declaredIdentifiers.add(varMatch[1])
         }
