@@ -1,7 +1,9 @@
 import { DiagnosticIssue } from '../../types/cEngine'
+import { normalizeCSymbols } from './codeSanitizer'
 
-export function analyzeCCodeDiagnostics(code: string): DiagnosticIssue[] {
+export function analyzeCCodeDiagnostics(rawCode: string): DiagnosticIssue[] {
   const issues: DiagnosticIssue[] = []
+  const code = normalizeCSymbols(rawCode)
   const lines = code.split('\n')
 
   lines.forEach((lineText, index) => {

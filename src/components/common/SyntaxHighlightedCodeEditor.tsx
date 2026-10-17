@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { renderHighlightedCCode } from '../../utils/cSyntaxHighlight'
 import { DiagnosticIssue } from '../../types/cEngine'
+import { normalizeCSymbols } from '../../core/c-sandbox/codeSanitizer'
 import { Eye, Edit3, AlertTriangle, AlertCircle } from 'lucide-react'
 
 interface SyntaxHighlightedCodeEditorProps {
@@ -100,14 +101,21 @@ export const SyntaxHighlightedCodeEditor: React.FC<SyntaxHighlightedCodeEditorPr
           {viewMode === 'editor' ? (
             <textarea
               value={code}
-              onChange={(e) => onChange && onChange(e.target.value)}
+              onChange={(e) => onChange && onChange(normalizeCSymbols(e.target.value))}
               readOnly={readOnly}
               spellCheck={false}
+              autoCapitalize="off"
+              autoComplete="off"
+              autoCorrect="off"
+              style={{ fontVariantLigatures: 'none', fontFeatureSettings: '"liga" 0, "calt" 0, "dlig" 0' }}
               className="w-full h-full min-h-[340px] bg-transparent text-slate-100 outline-none leading-6 font-mono text-xs resize-none"
               placeholder="Nhập mã nguồn C..."
             />
           ) : (
-            <div className="font-mono text-xs leading-6 select-text">
+            <div 
+              style={{ fontVariantLigatures: 'none', fontFeatureSettings: '"liga" 0, "calt" 0, "dlig" 0' }}
+              className="font-mono text-xs leading-6 select-text"
+            >
               {renderHighlightedCCode(code)}
             </div>
           )}

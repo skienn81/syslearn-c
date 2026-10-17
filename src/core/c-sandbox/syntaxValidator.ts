@@ -97,7 +97,11 @@ const STANDARD_FUNCTIONS = new Set([
   'write',
 ])
 
-export function validateCSyntax(rawCode: string, fileName: string = 'solution.c'): SyntaxValidationError | null {
+import { normalizeCSymbols } from './codeSanitizer'
+
+export function validateCSyntax(rawCodeInput: string, fileName: string = 'solution.c'): SyntaxValidationError | null {
+  const rawCode = normalizeCSymbols(rawCodeInput)
+
   // If it's a shell script, skip C syntax validation
   if (
     rawCode.includes('mkdir') ||

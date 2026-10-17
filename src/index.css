@@ -66,3 +66,17 @@ body {
 .font-mono-code {
   font-family: var(--font-mono);
 }
+
+/* Tắt hoàn toàn font ligatures cho code để != không bị gộp thành ≠, <= thành ≤, >= thành ≥, -> thành → */
+.font-mono,
+.font-mono-code,
+.cm-editor,
+.cm-content,
+.cm-line,
+.cm-scroller,
+textarea,
+pre,
+code {
+  font-variant-ligatures: none !important;
+  font-feature-settings: "liga" 0, "calt" 0, "dlig" 0 !important;
+}

@@ -1,6 +1,7 @@
 import { CExecutionResult } from '../../types/cEngine'
 import { analyzeCCodeDiagnostics } from './diagnosticRules'
 import { validateCSyntax } from './syntaxValidator'
+import { normalizeCSymbols } from './codeSanitizer'
 
 interface RefPointer {
   __isRef: true
@@ -10,11 +11,12 @@ interface RefPointer {
 }
 
 export function runCCode(
-  sourceCode: string,
+  rawSourceCode: string,
   stdinInput: string = '',
   fileName: string = 'solution.c'
 ): CExecutionResult {
   const startTime = performance.now()
+  const sourceCode = normalizeCSymbols(rawSourceCode)
   const diagnostics = analyzeCCodeDiagnostics(sourceCode)
 
   const outputParts: string[] = []
@@ -397,28 +399,30 @@ export function transpileCToJS(cCode: string): string {
   // 7. Transform C casts: (int*), (int *), (float), (unsigned char)
   code = code.replace(/\(\s*(unsigned\s+char|char|int|short|long|float|double)\s*\*?\s*\)/g, '')
 
+  const C_TYPE_RE = '(?:unsigned\\s+char|char|int|short|long|float|double|size_t|(?:struct|union)\\s+[a-zA-Z_]\\w*|[A-Z]\\w*)'
+
   // 8. Transform double pointer malloc: int **matrix = malloc(...); -> let matrix = __malloc(...);
   code = code.replace(
-    /(unsigned\s+char|char|int|short|long|float|double)\s*\*\*\s*([a-zA-Z_]\w*)\s*=\s*(?:\(\s*[^)]+\s*\)\s*)?malloc\(([^)]+)\);/g,
-    'let $2 = __malloc($3);'
+    new RegExp(`\\b${C_TYPE_RE}\\s*\\*\\*\\s*([a-zA-Z_]\\w*)\\s*=\\s*(?:\\(\\s*[^)]+\\s*\\)\\s*)?malloc\\(([^)]+)\\);`, 'g'),
+    'let $1 = __malloc($2);'
   )
 
   // 9. Transform pointer malloc: int *arr = malloc(...); -> let arr = __malloc(...);
   code = code.replace(
-    /(unsigned\s+char|char|int|short|long|float|double)\s*\*\s*([a-zA-Z_]\w*)\s*=\s*(?:\(\s*[^)]+\s*\)\s*)?malloc\(([^)]+)\);/g,
-    'let $2 = __malloc($3);'
+    new RegExp(`\\b${C_TYPE_RE}\\s*\\*\\s*([a-zA-Z_]\\w*)\\s*=\\s*(?:\\(\\s*[^)]+\\s*\\)\\s*)?malloc\\(([^)]+)\\);`, 'g'),
+    'let $1 = __malloc($2);'
   )
 
   // 10. Transform pointer declaration with address: int *p = &x; -> let p = __ref(() => x, (v) => { x = v; }, 'x');
   code = code.replace(
-    /(unsigned\s+char|char|int|short|long|float|double)\s*\*\s*([a-zA-Z_]\w*)\s*=\s*&([a-zA-Z_]\w*);/g,
-    "let $2 = __ref(() => $3, (v) => { $3 = v; }, '$3');"
+    new RegExp(`\\b${C_TYPE_RE}\\s*\\*\\s*([a-zA-Z_]\\w*)\\s*=\\s*&([a-zA-Z_]\\w*(?:\\.[a-zA-Z_]\\w*|\\[[^\\]]+\\])*);`, 'g'),
+    "let $1 = __ref(() => $2, (v) => { $2 = v; }, '$2');"
   )
 
   // 11. Transform pointer declaration with value/null: int *p = NULL;
   code = code.replace(
-    /(unsigned\s+char|char|int|short|long|float|double)\s*\*\s*([a-zA-Z_]\w*)(?:\s*=\s*([^;]+))?;/g,
-    (_m, _type, name, val) => `let ${name} = ${val ? val.trim() : 'null'};`
+    new RegExp(`\\b${C_TYPE_RE}\\s*\\*\\s*([a-zA-Z_]\\w*)(?:\\s*=\\s*([^;]+))?;`, 'g'),
+    (_m, name, val) => `let ${name} = ${val ? val.trim() : 'null'};`
   )
 
   // 12. Transform pointer dereference write: *p += val, *p = val;

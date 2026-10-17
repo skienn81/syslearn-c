@@ -8,6 +8,7 @@ import { cpp } from '@codemirror/lang-cpp'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { vim, Vim, getCM } from '@replit/codemirror-vim'
 import { DiagnosticIssue } from '../../types/cEngine'
+import { normalizeCSymbols } from '../../core/c-sandbox/codeSanitizer'
 import { Save, AlertTriangle, Keyboard } from 'lucide-react'
 
 interface VimEditorProps {
@@ -88,18 +89,26 @@ export const VimEditor: React.FC<VimEditorProps> = ({
         color: '#e2e8f0',
         fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, Monaco, Consolas, monospace",
         fontSize: '13px',
+        fontVariantLigatures: 'none',
+        fontFeatureSettings: '"liga" 0, "calt" 0, "dlig" 0',
       },
       '.cm-scroller': {
         overflow: 'auto',
         fontFamily: 'inherit',
+        fontVariantLigatures: 'none',
+        fontFeatureSettings: '"liga" 0, "calt" 0, "dlig" 0',
       },
       '.cm-content': {
         padding: '10px 0',
         caretColor: '#38bdf8',
+        fontVariantLigatures: 'none',
+        fontFeatureSettings: '"liga" 0, "calt" 0, "dlig" 0',
       },
       '.cm-line': {
         padding: '0 12px',
         lineHeight: '1.65',
+        fontVariantLigatures: 'none',
+        fontFeatureSettings: '"liga" 0, "calt" 0, "dlig" 0',
       },
       '.cm-cursor, .cm-dropCursor': {
         borderLeftColor: '#38bdf8',
@@ -145,6 +154,28 @@ export const VimEditor: React.FC<VimEditorProps> = ({
       },
     }, { dark: true })
 
+    // Auto-normalize any Unicode math / smart punctuation characters typed or pasted
+    const symbolSanitizerFilter = EditorState.transactionFilter.of((tr) => {
+      if (!tr.docChanged) return tr
+      let hasSpecial = false
+      tr.changes.iterChanges((_fromA, _toA, _fromB, _toB, inserted) => {
+        if (/[≠≤≥→➔➜“”„‘’—–−\u00A0\u200B]/.test(inserted.toString())) {
+          hasSpecial = true
+        }
+      })
+      if (!hasSpecial) return tr
+
+      const newChanges: any[] = []
+      tr.changes.iterChanges((fromA, toA, _fromB, _toB, inserted) => {
+        newChanges.push({
+          from: fromA,
+          to: toA,
+          insert: normalizeCSymbols(inserted.toString()),
+        })
+      })
+      return { changes: newChanges, selection: tr.selection }
+    })
+
     const extensions: Extension[] = [
       lineNumbers(),
       highlightActiveLineGutter(),
@@ -159,6 +190,13 @@ export const VimEditor: React.FC<VimEditorProps> = ({
       rectangularSelection(),
       highlightActiveLine(),
       highlightSelectionMatches(),
+      symbolSanitizerFilter,
+      EditorView.contentAttributes.of({
+        autocorrect: 'off',
+        autocapitalize: 'off',
+        spellcheck: 'false',
+        autocomplete: 'off',
+      }),
       cpp(),
       oneDark,
       customTheme,

@@ -207,6 +207,64 @@ assert(
   'Syntax Error 7: Code sai cú pháp TUYỆT ĐỐI KHÔNG CHẠY và không sinh stdout'
 )
 
+// SUITE 6: KIỂM THỬ CHUẨN HÓA KÝ TỰ UNICODE MATH & SMART PUNCTUATION (≠, ≤, ≥, →, “”, ‘’, —)
+console.log('\n--- TEST SUITE 6: CHUẨN HÓA KÝ TỰ ĐẶC BIỆT & UNICODE OPERATORS ---')
+
+// 6.1: Toán tử != bị biến thành ≠ do bộ gõ hoặc autocomplete/paste
+const unicodeNeCode = `
+#include <stdio.h>
+int main() {
+    int a = 10;
+    if (a ≠ 0) {
+        printf("DIFF\\n");
+    }
+    return 0;
+}
+`
+const resNe = runCCode(unicodeNeCode)
+assert(resNe.exitCode === 0 && resNe.stdout.trim() === 'DIFF', 'Unicode 1: Chuẩn hóa ≠ thành != chạy mượt mà không lỗi')
+
+// 6.2: Toán tử so sánh ≤ và ≥
+const unicodeCompCode = `
+#include <stdio.h>
+int main() {
+    int x = 5;
+    if (x ≤ 10 && x ≥ 1) {
+        printf("VALID\\n");
+    }
+    return 0;
+}
+`
+const resComp = runCCode(unicodeCompCode)
+assert(resComp.exitCode === 0 && resComp.stdout.trim() === 'VALID', 'Unicode 2: Chuẩn hóa ≤ và ≥ thành <= và >= thành công')
+
+// 6.3: Dấu ngoặc kép thông minh “...” và nháy đơn ‘...’
+const unicodeQuotesCode = `
+#include <stdio.h>
+int main() {
+    char ch = ‘Z’;
+    printf(“Char is %c\\n”, ch);
+    return 0;
+}
+`
+const resQuotes = runCCode(unicodeQuotesCode)
+assert(resQuotes.exitCode === 0 && resQuotes.stdout.trim() === 'Char is Z', 'Unicode 3: Chuẩn hóa dấu ngoặc kép thông minh “” và nháy đơn ‘’')
+
+// 6.4: Toán tử trỏ struct → (Arrow operator)
+const unicodeArrowCode = `
+#include <stdio.h>
+struct Point { int x; int y; };
+int main() {
+    struct Point p;
+    p.x = 42;
+    struct Point *ptr = &p;
+    printf("X: %d\\n", ptr→x);
+    return 0;
+}
+`
+const resArrow = runCCode(unicodeArrowCode)
+assert(resArrow.exitCode === 0 && resArrow.stdout.trim() === 'X: 42', 'Unicode 4: Chuẩn hóa toán tử con trỏ struct → thành ->')
+
 // BÁO CÁO KẾT QUẢ TỔNG THỂ
 console.log('\n====================================================')
 console.log(`🏁 TỔNG KẾT KIỂM THỬ: ${passedTests} PASSED, ${failedTests} FAILED`)

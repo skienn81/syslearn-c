@@ -13,6 +13,7 @@ import {
 import { runCCode } from '../../core/c-sandbox/cInterpreter'
 import { analyzeCCodeDiagnostics } from '../../core/c-sandbox/diagnosticRules'
 import { validateCSyntax } from '../../core/c-sandbox/syntaxValidator'
+import { normalizeCSymbols } from '../../core/c-sandbox/codeSanitizer'
 import { DiagnosticIssue } from '../../types/cEngine'
 import { VirtualFileSystem } from '../../core/vfs/VirtualFileSystem'
 import { VimEditor } from '../vim/VimEditor'
@@ -117,17 +118,18 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
 
   // Code state (Loaded from persistent draft, fallback to scaffoldingCode)
   const [code, setCode] = useState<string>(() => {
-    return getSavedExerciseCode(currentLab.id, currentLab.scaffoldingCode)
+    return normalizeCSymbols(getSavedExerciseCode(currentLab.id, currentLab.scaffoldingCode))
   })
   const [showSolution, setShowSolution] = useState<boolean>(false)
   const [isVimMode, setIsVimMode] = useState<boolean>(true)
   const [vimCurrentMode, setVimCurrentMode] = useState<string>('NORMAL')
 
-  // Auto-save code draft
+  // Auto-save code draft with automatic Unicode symbol normalization
   const handleCodeChange = (newCode: string) => {
     if (showSolution) return
-    setCode(newCode)
-    saveExerciseCode(currentLab.id, newCode)
+    const cleanCode = normalizeCSymbols(newCode)
+    setCode(cleanCode)
+    saveExerciseCode(currentLab.id, cleanCode)
   }
 
   // Persist navigation stack & level
@@ -187,7 +189,7 @@ export const UnifiedCodingWorkspace: React.FC<UnifiedCodingWorkspaceProps> = ({
 
   // Sync code and record history when active lab changes
   useEffect(() => {
-    const savedCode = getSavedExerciseCode(currentLab.id, currentLab.scaffoldingCode)
+    const savedCode = normalizeCSymbols(getSavedExerciseCode(currentLab.id, currentLab.scaffoldingCode))
     setCode(savedCode)
     setShowSolution(false)
     setTestResults(null)
